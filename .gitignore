@@ -357,6 +357,7 @@ run_pet.bat
 !/plugins/hello_world_plugin
 !/plugins/emoji_manage_plugin
 !/plugins/__init__.py
+!/plugins/_manifest.schema.json
 
 config.toml
 

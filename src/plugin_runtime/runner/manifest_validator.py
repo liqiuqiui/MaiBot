@@ -6,6 +6,7 @@
 
 import json
 import re
+import tomllib
 from functools import lru_cache
 from importlib import metadata as importlib_metadata
 from pathlib import Path
@@ -30,6 +31,7 @@ _ICON_NAME_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 _HEX_COLOR_PATTERN = re.compile(r"^#[0-9A-Fa-f]{6}$")
 _LOCAL_ICON_SUFFIXES = {".jpg", ".jpeg", ".png", ".svg", ".webp"}
 _RESERVED_PLUGIN_DIRECTORY_NAMES = {"data", "__pycache__"}  # 条目需为 casefold 形式
+_MANIFEST_METADATA_FIELDS = {"$schema"}
 
 
 def is_reserved_plugin_directory(path: Path) -> bool:
@@ -867,7 +869,7 @@ class ManifestValidator:
             return None
 
         try:
-            parsed_manifest = PluginManifest.model_validate(manifest)
+            parsed_manifest = PluginManifest.model_validate(self._strip_metadata_fields(manifest))
         except ValidationError as exc:
             self.errors.extend(self._format_validation_errors(exc))
             self._log_errors(source=source)
@@ -880,6 +882,16 @@ class ManifestValidator:
         self._log_warnings(source=source or parsed_manifest.id)
 
         return parsed_manifest
+
+    @staticmethod
+    def _strip_metadata_fields(manifest: Dict[str, Any]) -> Dict[str, Any]:
+        """移除只供编辑器或工具使用的顶层元字段。
+
+        ``_manifest.json`` 业务字段仍由 ``PluginManifest`` 严格白名单校验；
+        这里只允许剥离 JSON Schema 标准引用字段，避免为任意未声明属性开口。
+        """
+
+        return {key: value for key, value in manifest.items() if key not in _MANIFEST_METADATA_FIELDS}
 
     def load_from_plugin_path(self, plugin_path: Path, require_entrypoint: bool = True) -> Optional[PluginManifest]:
         """从插件目录读取并解析 manifest。

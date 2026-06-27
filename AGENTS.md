@@ -80,6 +80,8 @@ WebUI 开发服务固定起到 7999 端口。
 # maibot插件开发文档
 https://github.com/Mai-with-u/maibot-plugin-sdk/blob/main/docs/guide.md
 
+如果改动插件 `_manifest.json` 的配置项、manifest 解析/校验逻辑、SDK 插件清单约定，或 WebUI 中与插件 manifest 字段相关的展示/枚举定义，必须同步检查并更新 `plugins/_manifest.schema.json`，确保 schema 与主程序、SDK 和前端代码行为保持一致。
+
 如果你要编写插件，不要改动根目录的.gitignore，而是在/plugins下创建独立仓库，然后进行编写
 如果你要编写插件有需求需要改动主程序代码，请你先请求许可。
 
